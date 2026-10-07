@@ -4,13 +4,14 @@ on:
   push:
     branches: [main]
     paths:
-      - 'data/**.dvc'
-      - 'src/**.py'
-      - 'params.yaml'
+      - "data/*.dvc"
+      - "data/**/*.dvc"
+      - "data/**"
+      - "src/**"
+      - "params.yaml"
   workflow_dispatch:
 
 jobs:
-
   # ---------------------------------------------------------------------------
   # JOB 1 - UNIT TEST
   # Chay unit tests tren du lieu ao (khong can ket noi cloud storage).
@@ -31,9 +32,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run unit tests
-        # TODO 1: Viet lenh de chay pytest tren thu muc tests/ voi co -v
         run: pytest tests/ -v
-
 
   # ---------------------------------------------------------------------------
   # JOB 2 - TRAIN
@@ -66,8 +65,6 @@ jobs:
           echo "CLOUDSDK_CORE_PROJECT=ai-lab-16-gcp-510409" >> $GITHUB_ENV
 
       - name: Pull data with DVC
-        # TODO 3: Pull cac file du lieu can thiet tu cloud storage bang lenh dvc pull.
-        #         Chi pull train_batch1.csv va holdout.csv (khong can train_batch2.csv).
         run: dvc pull data/train_batch1.csv.dvc data/holdout.csv.dvc
 
       - name: Train model
@@ -75,16 +72,11 @@ jobs:
 
       - name: Read report
         id: read_report
-        # TODO 4: Doc gia tri "f1_score" tu outputs/report.json bang Python inline.
-        #         Set ket qua thanh output "f1" de job quality-gate co the doc.
         run: |
           F1=$(python -c "import json; d=json.load(open('outputs/report.json')); print(d['f1_score'])")
           echo "f1=$F1" >> $GITHUB_OUTPUT
 
       - name: Upload model to Cloud Storage
-        # TODO 5: Su dung cloud SDK de upload models/model.joblib len
-        #         <bucket>/artifacts/current/model.joblib.
-        #         Ten bucket lay tu secret ARTIFACT_BUCKET.
         env:
           ARTIFACT_BUCKET: ${{ secrets.ARTIFACT_BUCKET }}
         run: |
@@ -109,13 +101,11 @@ jobs:
           print(f"Model successfully uploaded to gs://{bucket_name}/artifacts/current/model.joblib")
           PYEOF
 
-
       - name: Save report as artifact
         uses: actions/upload-artifact@v4
         with:
           name: report
           path: outputs/report.json
-
 
   # ---------------------------------------------------------------------------
   # JOB 3 - QUALITY GATE
@@ -127,11 +117,7 @@ jobs:
     needs: train
     runs-on: ubuntu-latest
     steps:
-
       - name: Check quality gate
-        # TODO 6: Doc f1 tu output cua job train.
-        #         Neu f1 < 0.65, ket thuc voi loi ro rang.
-        #         Neu dat nguong, in thong bao va tiep tuc.
         run: |
           python - <<'PYEOF'
           f1 = float("${{ needs.train.outputs.f1 }}")
@@ -139,7 +125,6 @@ jobs:
               raise SystemExit(f"FAILED: f1_score {f1:.4f} < 0.65. Huy trien khai.")
           print(f"PASSED: f1_score = {f1:.4f} >= 0.65. Dang trien khai model.")
           PYEOF
-
 
   # ---------------------------------------------------------------------------
   # JOB 4 - RELEASE
@@ -151,7 +136,6 @@ jobs:
     needs: quality-gate
     runs-on: ubuntu-latest
     steps:
-
       - name: SSH deploy to VM
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -170,5 +154,3 @@ jobs:
             done
             echo "Health check failed after 10 attempts."
             exit 1
-
-
