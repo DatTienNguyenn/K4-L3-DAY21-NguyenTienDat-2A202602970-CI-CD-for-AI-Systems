@@ -18,7 +18,10 @@ def download_model():
     Ham nay duoc goi mot lan khi module duoc import. Su dung
     GOOGLE_APPLICATION_CREDENTIALS de xac thuc (duoc dat trong systemd service).
     """
-    client = storage.Client()
+    try:
+        client = storage.Client()
+    except Exception:
+        client = storage.Client(project=os.environ.get("GOOGLE_CLOUD_PROJECT", "ai-lab-16-gcp-510409"))
 
     bucket = client.bucket(ARTIFACT_BUCKET)
     blob   = bucket.blob(MODEL_KEY)

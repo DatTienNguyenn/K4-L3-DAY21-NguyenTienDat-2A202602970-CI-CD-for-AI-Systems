@@ -62,6 +62,8 @@ jobs:
           echo '${{ secrets.STORAGE_CREDENTIALS }}' > /tmp/sa-key.json
           echo '${{ secrets.STORAGE_CREDENTIALS }}' > sa-key.json
           echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa-key.json" >> $GITHUB_ENV
+          echo "GOOGLE_CLOUD_PROJECT=ai-lab-16-gcp-510409" >> $GITHUB_ENV
+          echo "CLOUDSDK_CORE_PROJECT=ai-lab-16-gcp-510409" >> $GITHUB_ENV
 
       - name: Pull data with DVC
         # TODO 3: Pull cac file du lieu can thiet tu cloud storage bang lenh dvc pull.
@@ -88,15 +90,25 @@ jobs:
         run: |
           python - <<'PYEOF'
           import os
+          import json
           from google.cloud import storage
 
+          project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "ai-lab-16-gcp-510409")
+          try:
+              with open("/tmp/sa-key.json") as f:
+                  data = json.load(f)
+                  project_id = data.get("project_id") or data.get("quota_project_id") or project_id
+          except Exception:
+              pass
+
           bucket_name = os.environ["ARTIFACT_BUCKET"]
-          client = storage.Client()
+          client = storage.Client(project=project_id)
           bucket = client.bucket(bucket_name)
           blob = bucket.blob("artifacts/current/model.joblib")
           blob.upload_from_filename("models/model.joblib")
           print(f"Model successfully uploaded to gs://{bucket_name}/artifacts/current/model.joblib")
           PYEOF
+
 
       - name: Save report as artifact
         uses: actions/upload-artifact@v4
