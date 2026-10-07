@@ -13,35 +13,25 @@ HƯỚNG DẪN - đọc rồi XÓA TOÀN BỘ các khối chú thích này sau k
 
 | | |
 |---|---|
-| Họ và tên | ___ |
-| MSSV | ___ |
+| Họ và tên | Nguyễn Tiến Đạt |
+| MSSV | 2A202602970 |
 | Lớp / Khóa | K4 |
-| Repo GitHub | https://github.com/___/___ |
-| Ngày nộp | ___ |
+| Repo GitHub | https://github.com/DatTienNguyenn/K4-L3-DAY21-NguyenTienDat-2A202602970-CI-CD-for-AI-Systems |
+| Ngày nộp | 07/10/2026 |
 
 ---
 
 ## 1. Bộ Siêu Tham Số Đã Chọn và Lý Do
 
-<!-- Khoảng 120 - 150 từ. Điền kết quả thật từ MLflow UI ở Bước 1, tối thiểu 3 lần chạy. -->
-
 | Lần chạy | n_estimators | learning_rate | max_depth | f1_score | accuracy |
 |---|---|---|---|---|---|
-| 1 | ___ | ___ | ___ | ___ | ___ |
-| 2 | ___ | ___ | ___ | ___ | ___ |
-| 3 | ___ | ___ | ___ | ___ | ___ |
+| 1 | 100 | 0.1 | 3 | 0.7109 | 0.8780 |
+| 2 | 50 | 0.05 | 2 | 0.6051 | 0.8460 |
+| 3 | 200 | 0.1 | 5 | 0.7149 | 0.8740 |
 
-**Bộ siêu tham số đã chọn:** `n_estimators=___`, `learning_rate=___`, `max_depth=___`.
+**Bộ siêu tham số đã chọn:** `n_estimators=200`, `learning_rate=0.1`, `max_depth=5`.
 
-**Lý do:** ___
-
-<!--
-Trả lời trong phần Lý do:
-  - Vì sao bộ này tốt hơn các bộ còn lại (dựa trên f1_score, không phải accuracy)?
-  - Lần chạy có accuracy cao nhất có trùng với lần có f1_score cao nhất không?
-    Nếu không, điều đó nói lên điều gì?
-  - Bạn quan sát thấy đánh đổi nào giữa n_estimators và learning_rate?
--->
+**Lý do:** Bộ siêu tham số lần 3 đạt `f1_score = 0.7149`, cao nhất trong cả 3 lần thử nghiệm và vượt qua ngưỡng yêu cầu 0.65. Mặc dù lần chạy 1 có `accuracy` cao nhất (0.8780 so với 0.8740 của lần 3), nhưng `f1_score` của lần 3 vượt trội hơn (0.7149 so với 0.7109), cho thấy mô hình sâu hơn nắm bắt và phân loại lớp dương (thu nhập > 50K) hiệu quả hơn trên dữ liệu mất cân bằng. Việc lần chạy có accuracy cao nhất không trùng với lần có f1_score cao nhất chứng minh accuracy bị chi phối bởi lớp đa số (<= 50K) và không phản ánh đúng chất lượng phát hiện lớp thiểu số. Ngoài ra, có sự đánh đổi rõ rệt giữa `n_estimators` và `learning_rate`: ở lần 2 khi giảm tốc độ học xuống 0.05 cùng `max_depth=2` nhưng số cây quá ít (`n_estimators=50`), mô hình chưa kịp hội tụ khiến F1 tụt dốc còn 0.6051. Ngược lại, cấu hình `n_estimators=200` và `max_depth=5` cho phép các cây sau sửa sai hiệu quả cho các cây trước, mang lại mô hình tối ưu nhất.
 
 ---
 
